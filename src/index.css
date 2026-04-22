@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #f0f2f5;
+  color: #111b21;
+}
+
+/* Subtle WhatsApp-like chat background pattern */
+.chat-pattern {
+  background-color: #E5DDD5;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><g fill='%23d4cdc4' fill-opacity='0.4'><circle cx='10' cy='10' r='1'/><circle cx='40' cy='40' r='1'/><circle cx='70' cy='20' r='1'/><circle cx='20' cy='60' r='1'/><circle cx='60' cy='70' r='1'/></g></svg>");
+}
+
+/* Bubble tail */
+.bubble-tail-out::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -7px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 10px 8px;
+  border-color: transparent transparent transparent #DCF8C6;
+}
+.bubble-tail-in::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -7px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 8px 10px 0;
+  border-color: transparent #ffffff transparent transparent;
+}
+
+/* Custom scrollbar (webkit) */
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 3px;
+}
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
