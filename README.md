@@ -1,6 +1,6 @@
 # WhatsApp Business Platform
 
-A production-ready admin dashboard for managing WhatsApp Business conversations. Built with React, TypeScript, and Supabase. Supports multiple WhatsApp numbers, real-time messaging, media, templates, and contact management — all in a familiar WhatsApp Web style interface.
+A production-ready admin dashboard for managing WhatsApp Business conversations. Built with React, TypeScript, and Supabase. Supports multiple WhatsApp numbers, real-time messaging, media, templates, and contact management - all in a familiar WhatsApp Web style interface.
 
 <br>
 
@@ -33,16 +33,16 @@ A production-ready admin dashboard for managing WhatsApp Business conversations.
 
 ## ✨ Features
 
-- **Multi-number inbox** — manage multiple WhatsApp Business numbers from one dashboard
-- **Real-time conversations** — messages appear instantly via Supabase Realtime
-- **Template messages** — send approved templates when the 24-hour window is closed
-- **Media support** — send and receive images, videos, audio, and documents
-- **Contact management** — add new contacts, view profiles, delete conversations
-- **Message status** — sent, delivered, read, and failed states with error details
-- **24-hour window tracking** — visual countdown before the messaging window expires
-- **Error reporting** — detailed Meta API error cards with raw error codes
-- **Swipe to reply** — swipe any message to quote-reply
-- **Admin dashboard** — manage WhatsApp numbers, sync templates, view stats
+- **Multi-number inbox** - manage multiple WhatsApp Business numbers from one dashboard
+- **Real-time conversations** - messages appear instantly via Supabase Realtime
+- **Template messages** - send approved templates when the 24-hour window is closed
+- **Media support** - send and receive images, videos, audio, and documents
+- **Contact management** - add new contacts, view profiles, delete conversations
+- **Message status** - sent, delivered, read, and failed states with error details
+- **24-hour window tracking** - visual countdown before the messaging window expires
+- **Error reporting** - detailed Meta API error cards with raw error codes
+- **Swipe to reply** - swipe any message to quote-reply
+- **Admin dashboard** - manage WhatsApp numbers, sync templates, view stats
 
 <br>
 
@@ -69,7 +69,7 @@ Before you begin, make sure you have the following ready.
 
 ## 🚀 Setup Guide
 
-### Step 1 — Create a Supabase Project
+### Step 1 - Create a Supabase Project
 
 1. Go to [supabase.com](https://supabase.com) and sign in
 2. Click **New Project**
@@ -78,7 +78,7 @@ Before you begin, make sure you have the following ready.
 
 <br>
 
-### Step 2 — Collect Your Supabase Credentials
+### Step 2 - Collect Your Supabase Credentials
 
 You need four values from Supabase. Here is exactly where to find each one.
 
@@ -133,7 +133,7 @@ Supabase Dashboard
 
 <br>
 
-### Step 3 — Clone and Install
+### Step 3 - Clone and Install
 
 ```bash
 git clone https://github.com/your-username/whatsapp-business-platform.git
@@ -143,7 +143,7 @@ npm install
 
 <br>
 
-### Step 4 — Configure Environment Variables
+### Step 4 - Configure Environment Variables
 
 Copy the example file and fill in your values.
 
@@ -181,7 +181,7 @@ ADMIN_NAME=Your Name
 
 <br>
 
-### Step 5 — Run Automatic Setup
+### Step 5 - Run Automatic Setup
 
 One command sets up everything: database tables, admin user, storage bucket, and all edge functions.
 
@@ -208,51 +208,7 @@ This will run five steps automatically:
 
 <br>
 
-### Step 6 — Configure WhatsApp on Meta
-
-#### 6a. Create a Meta App
-
-1. Go to [developers.facebook.com](https://developers.facebook.com)
-2. Click **My Apps → Create App**
-3. Choose **Business** as the app type
-4. Follow the prompts to connect your WhatsApp Business Account
-
-#### 6b. Collect Meta Credentials
-
-```
-Meta App Dashboard
-  → Your App
-    → WhatsApp
-      → API Setup
-        → Phone Number ID   ← copy this value
-        → Access Token      ← copy this value (use a permanent token for production)
-```
-
-#### 6c. Register Your WhatsApp Number in the Dashboard
-
-1. Start the app with `npm run dev`
-2. Log in with the admin credentials you set in `.env.local`
-3. Go to **Admin → Numbers → Add Number**
-4. Paste your Phone Number ID, Access Token, and create a Verify Token (any random string like `my-secret-123`)
-
-#### 6d. Set Up the Webhook on Meta
-
-```
-Meta App Dashboard
-  → Your App
-    → WhatsApp
-      → Configuration
-        → Webhook
-          → Callback URL: https://your-project-ref.supabase.co/functions/v1/whatsapp-webhook
-          → Verify Token:  the same string you entered in the dashboard (e.g. my-secret-123)
-          → Subscribe to: messages
-```
-
-Click **Verify and Save**. The webhook will return a green checkmark when the connection is live.
-
-<br>
-
-### Step 7 — Start the App
+### Step 6 - Start the App
 
 ```bash
 npm run dev
