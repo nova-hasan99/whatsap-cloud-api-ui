@@ -170,6 +170,13 @@ SUPABASE_ACCESS_TOKEN=sbp_your_token_here
 ADMIN_EMAIL=admin@yourdomain.com
 ADMIN_PASSWORD=your_secure_password
 ADMIN_NAME=Your Name
+
+# Optional: auto-fill the login form when developing locally
+# Set to true to pre-fill email and password on the login page
+# Never set to true in production — these values are visible in the browser bundle
+VITE_DEV_AUTOFILL=false
+VITE_ADMIN_EMAIL=admin@yourdomain.com
+VITE_ADMIN_PASSWORD=your_secure_password
 ```
 
 <br>
@@ -182,14 +189,15 @@ One command sets up everything: database tables, admin user, storage bucket, and
 npm run setup
 ```
 
-This will run five steps automatically:
+This will run six steps automatically:
 
 ```
-[1/5] Applying database schema (all tables, RLS policies, triggers)
-[2/5] Creating admin auth user
-[3/5] Seeding admin profile row
-[4/5] Creating media storage bucket
-[5/5] Deploying all 12 edge functions
+[1/6] Applying database schema (all tables, RLS policies, triggers)
+[2/6] Creating admin auth user
+[3/6] Seeding admin profile row
+[4/6] Creating media storage bucket
+[5/6] Deploying all 13 edge functions
+[6/6] Scheduling daily keepalive ping (prevents free-tier pausing)
 ```
 
 > If setup fails on the functions step, your access token may have expired.

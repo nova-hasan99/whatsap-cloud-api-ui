@@ -43,6 +43,7 @@ loadEnv();
 
 // ── Read config from env ────────────────────────────────────────
 const SUPABASE_URL  = process.env.VITE_SUPABASE_URL || '';
+const ANON_KEY      = process.env.VITE_SUPABASE_ANON_KEY || '';
 const SERVICE_KEY   = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const ACCESS_TOKEN  = process.env.SUPABASE_ACCESS_TOKEN || '';
 const ADMIN_EMAIL   = process.env.ADMIN_EMAIL || 'admin@example.com';
@@ -78,7 +79,7 @@ async function managementQuery(sql) {
 
 // ── Step 1: Run migrations ───────────────────────────────────────
 async function runMigrations() {
-  console.log('\n[1/5] Applying database schema…');
+  console.log('\n[1/6] Applying database schema…');
   if (!ACCESS_TOKEN) {
     warn('SUPABASE_ACCESS_TOKEN not set — skipping auto-migration.');
     warn('Run manually in Supabase → SQL Editor:');
@@ -108,7 +109,7 @@ async function runMigrations() {
 
 // ── Step 2: Create auth user ─────────────────────────────────────
 async function createAuthUser() {
-  console.log('\n[2/5] Creating admin auth user…');
+  console.log('\n[2/6] Creating admin auth user…');
   if (!SERVICE_KEY) {
     warn('SUPABASE_SERVICE_ROLE_KEY not set — skipping.');
     warn(`Create manually: Supabase → Authentication → Users → Add user`);
@@ -131,7 +132,7 @@ async function createAuthUser() {
 
 // ── Step 3: Seed admin profile ───────────────────────────────────
 async function seedAdminProfile() {
-  console.log('\n[3/5] Seeding admin profile…');
+  console.log('\n[3/6] Seeding admin profile…');
   if (!SERVICE_KEY) { warn('No SERVICE_KEY — skipping.'); return; }
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
   const { error } = await sb.from('admins').upsert(
@@ -148,7 +149,7 @@ async function seedAdminProfile() {
 
 // ── Step 4: Create storage bucket ───────────────────────────────
 async function createStorageBucket() {
-  console.log('\n[4/5] Creating media storage bucket…');
+  console.log('\n[4/6] Creating media storage bucket…');
   if (!SERVICE_KEY) {
     warn('No SERVICE_KEY — skipping.');
     warn('Create manually: Supabase → Storage → New bucket → name: media → Public: YES');
@@ -171,7 +172,7 @@ async function createStorageBucket() {
 
 // ── Step 5: Deploy all edge functions ───────────────────────────
 async function deployFunctions() {
-  console.log('\n[5/5] Deploying edge functions…');
+  console.log('\n[5/6] Deploying edge functions…');
   if (!ACCESS_TOKEN) {
     warn('No ACCESS_TOKEN — skipping auto-deploy.');
     warn('Run manually:  npm run deploy');
@@ -191,6 +192,7 @@ async function deployFunctions() {
     'delete-message',
     'create-conversation',
     'delete-conversation',
+    'keep-alive',
   ];
 
   const env = { ...process.env, SUPABASE_ACCESS_TOKEN: ACCESS_TOKEN };
@@ -215,6 +217,51 @@ async function deployFunctions() {
   log(`${ok} functions deployed${failed ? `, ${failed} failed` : ''}`);
 }
 
+// ── Step 6: Schedule daily keepalive ping ────────────────────────
+async function setupKeepalive() {
+  console.log('\n[6/6] Scheduling daily keepalive ping…');
+  if (!ACCESS_TOKEN) {
+    warn('No ACCESS_TOKEN — skipping keepalive setup.');
+    warn('Run manually in Supabase → SQL Editor (see below).');
+    return;
+  }
+  if (!ANON_KEY) {
+    warn('VITE_SUPABASE_ANON_KEY not set — skipping keepalive setup.');
+    return;
+  }
+
+  const pingUrl = `${SUPABASE_URL}/functions/v1/keep-alive`;
+
+  // Enable pg_net, remove old job if exists, create fresh daily schedule.
+  const sql = `
+    CREATE EXTENSION IF NOT EXISTS pg_net;
+
+    DO $do$
+    BEGIN
+      PERFORM cron.unschedule('keepalive-ping');
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END
+    $do$;
+
+    SELECT cron.schedule(
+      'keepalive-ping',
+      '0 8 * * *',
+      'SELECT net.http_post(url := ''${pingUrl}'', headers := ''{"Authorization": "Bearer ${ANON_KEY}"}''::jsonb, body := ''{}''::jsonb)'
+    );
+  `;
+
+  try {
+    await managementQuery(sql);
+    log('Keepalive ping scheduled — runs daily at 08:00 UTC');
+  } catch (e) {
+    fail(`Keepalive setup failed: ${e.message}`);
+    warn('You can set this up manually in Supabase → SQL Editor:');
+    warn(`  SELECT cron.schedule('keepalive-ping', '0 8 * * *',`);
+    warn(`    'SELECT net.http_post(url := ''${pingUrl}'', ...)'`);
+    warn(`  );`);
+  }
+}
+
 // ── Main ─────────────────────────────────────────────────────────
 async function main() {
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -229,6 +276,7 @@ async function main() {
   await seedAdminProfile();
   await createStorageBucket();
   await deployFunctions();
+  await setupKeepalive();
 
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('  Setup complete!');

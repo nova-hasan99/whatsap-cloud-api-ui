@@ -5,11 +5,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
+const autofill = import.meta.env.VITE_DEV_AUTOFILL === 'true';
+const defaultEmail = autofill ? (import.meta.env.VITE_ADMIN_EMAIL ?? '') : '';
+const defaultPassword = autofill ? (import.meta.env.VITE_ADMIN_PASSWORD ?? '') : '';
+
 export function LoginPage() {
   const { signIn, session, loading } = useAuth();
   const loc = useLocation();
-  const [email, setEmail] = useState('lattice.hasan.dev@gmail.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState(defaultEmail);
+  const [password, setPassword] = useState(defaultPassword);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -67,9 +71,6 @@ export function LoginPage() {
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-gray-400">
-          Default account: lattice.hasan.dev@gmail.com / 123456
-        </p>
       </div>
     </div>
   );

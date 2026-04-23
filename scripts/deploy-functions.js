@@ -49,6 +49,7 @@ const functions = [
   'delete-message',
   'create-conversation',
   'delete-conversation',
+  'keep-alive',
 ];
 
 console.log(`\nDeploying ${functions.length} functions to project: ${ref}\n`);
