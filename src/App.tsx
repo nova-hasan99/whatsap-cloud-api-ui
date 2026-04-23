@@ -9,6 +9,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { NumbersPage } from '@/pages/NumbersPage';
 import { TemplatesPage } from '@/pages/TemplatesPage';
 import { InboxPage } from '@/pages/InboxPage';
+import { SetupGuidePage } from '@/pages/SetupGuidePage';
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/numbers" element={<NumbersPage />} />
             <Route path="/templates" element={<TemplatesPage />} />
+            <Route path="/setup-guide" element={<SetupGuidePage />} />
           </Route>
 
           <Route

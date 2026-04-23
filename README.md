@@ -8,26 +8,19 @@ A production-ready admin dashboard for managing WhatsApp Business conversations.
 
 ### Inbox and Chat View
 
-> Replace the path below with your actual screenshot once captured.
-> Recommended size: 1280×720 or wider.
-
-![Inbox View](![alt text](image.png))
+![alt text](image.png)
 
 <br>
 
 ### Dashboard and Admin View
 
-> Replace the path below with your actual screenshot once captured.
-
-![Dashboard View](![alt text](image-1.png))
+![alt text](image-1.png)
 
 <br>
 
 ## 🎬 Video Demo
 
-> Replace `YOUR_VIDEO_ID` with your actual YouTube video ID after uploading.
-
-[![Watch the full demo on YouTube](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=3XslYjbphuc)
+[![Watch the full demo on YouTube](https://img.youtube.com/vi/3XslYjbphuc/maxresdefault.jpg)](https://www.youtube.com/watch?v=3XslYjbphuc)
 
 <br>
 
@@ -136,8 +129,8 @@ Supabase Dashboard
 ### Step 3 - Clone and Install
 
 ```bash
-git clone https://github.com/your-username/whatsapp-business-platform.git
-cd whatsapp-business-platform
+git clone https://github.com/nova-hasan99/whatsap-cloud-api-ui.git
+cd whatsap-cloud-api-ui
 npm install
 ```
 

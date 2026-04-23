@@ -7,6 +7,7 @@ import {
   FileText,
   ToggleRight,
   LogOut,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -17,6 +18,7 @@ const items = [
   { to: '/numbers', label: 'WhatsApp Numbers', icon: Phone },
   { to: '/inbox', label: 'Conversations', icon: MessageSquare },
   { to: '/templates', label: 'Templates', icon: FileText },
+  { to: '/setup-guide', label: 'Setup Guide', icon: BookOpen },
 ];
 
 export function Sidebar() {

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, ExternalLink } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -165,7 +165,17 @@ export function NumberFormModal({ open, onClose, onSaved, initial }: Props) {
         </div>
 
         <div className="md:col-span-2 rounded-lg border border-emerald-100 bg-emerald-50/40 p-4">
-          <h3 className="mb-2 text-sm font-semibold text-wa-teal">Setup instructions</h3>
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-wa-teal">Setup instructions</h3>
+            <a
+              href="/setup-guide"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-wa-teal hover:underline"
+            >
+              Full guide <ExternalLink size={11} />
+            </a>
+          </div>
           <ol className="list-decimal space-y-1 pl-5 text-xs text-gray-700">
             <li>Go to <a className="text-wa-teal underline" href="https://developers.facebook.com/apps" target="_blank" rel="noreferrer">developers.facebook.com/apps</a></li>
             <li>Create or select your app</li>
