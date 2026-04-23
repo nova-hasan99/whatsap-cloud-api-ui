@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDown } from 'lucide-react';
 import { useMessages } from '@/hooks/useMessages';
-import { callFunction } from '@/lib/supabase';
-import { useToast } from '@/contexts/ToastContext';
 import { dateSeparatorLabel, cx } from '@/lib/utils';
 import { DateSeparator } from './DateSeparator';
 import { MessageBubble } from './MessageBubble';
@@ -20,15 +18,6 @@ export function ChatArea({ conversationId, onReply }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [showJump, setShowJump] = useState(false);
   const lastCountRef = useRef(0);
-  const toast = useToast();
-
-  async function handleDelete(msg: Message) {
-    try {
-      await callFunction('delete-message', { message_id: msg.id });
-    } catch (e: any) {
-      toast.error(e.message ?? 'Failed to delete message');
-    }
-  }
 
   // Auto-scroll to bottom on first load and on new messages (when already near bottom).
   useEffect(() => {
@@ -104,7 +93,6 @@ export function ChatArea({ conversationId, onReply }: Props) {
                 prevSameSender={sameAsPrev}
                 allMessages={messages}
                 onReply={onReply}
-                onDelete={handleDelete}
               />
             </div>
           );

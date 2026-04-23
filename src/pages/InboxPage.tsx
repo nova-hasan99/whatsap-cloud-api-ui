@@ -114,6 +114,12 @@ export function InboxPage() {
           onSelectNumber={selectNumber}
           selectedConversationId={selected?.id ?? null}
           onSelectConversation={selectConversation}
+          onDeleteConversation={(conv) => {
+            if (selected?.id === conv.id) {
+              navigate(`/inbox/${conv.whatsapp_number_id}`);
+              setSelected(null);
+            }
+          }}
         />
       </div>
 

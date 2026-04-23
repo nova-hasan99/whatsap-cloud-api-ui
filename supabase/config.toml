@@ -53,3 +53,9 @@ verify_jwt = false
 
 [functions.delete-message]
 verify_jwt = false
+
+[functions.create-conversation]
+verify_jwt = false
+
+[functions.delete-conversation]
+verify_jwt = false

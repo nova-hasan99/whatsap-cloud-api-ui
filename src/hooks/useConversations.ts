@@ -74,5 +74,9 @@ export function useConversations({ whatsappNumberId, filter, search }: Args) {
     );
   }, [conversations, search]);
 
-  return { conversations: filtered, raw: conversations, loading, refetch };
+  const removeById = useCallback((id: string) => {
+    setConversations((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
+  return { conversations: filtered, raw: conversations, loading, refetch, removeById };
 }

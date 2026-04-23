@@ -167,7 +167,7 @@ async function handleIncomingMessage(
   value: MetaChange['value'],
   msg: MetaIncomingMessage,
 ) {
-  const customerPhone = msg.from;
+  const customerPhone = msg.from.startsWith('+') ? msg.from : '+' + msg.from;
   const contact = value.contacts?.find((c) => c.wa_id === customerPhone);
   const customerName = contact?.profile?.name ?? null;
   const ts = new Date(Number(msg.timestamp) * 1000).toISOString();
@@ -286,7 +286,7 @@ async function captureExternalOutbound(
   whatsappNumberId: string,
   st: MetaStatus,
 ) {
-  const recipientPhone = st.recipient_id;
+  const recipientPhone = st.recipient_id.startsWith('+') ? st.recipient_id : '+' + st.recipient_id;
   const ts = new Date(Number(st.timestamp) * 1000).toISOString();
 
   // Find or create conversation for this recipient
