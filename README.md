@@ -11,7 +11,7 @@ A production-ready admin dashboard for managing WhatsApp Business conversations.
 > Replace the path below with your actual screenshot once captured.
 > Recommended size: 1280×720 or wider.
 
-![Inbox View](docs/screenshots/inbox-view.png)
+![Inbox View](![alt text](image.png))
 
 <br>
 
@@ -19,7 +19,7 @@ A production-ready admin dashboard for managing WhatsApp Business conversations.
 
 > Replace the path below with your actual screenshot once captured.
 
-![Dashboard View](docs/screenshots/dashboard-view.png)
+![Dashboard View](![alt text](image-1.png))
 
 <br>
 
@@ -27,7 +27,7 @@ A production-ready admin dashboard for managing WhatsApp Business conversations.
 
 > Replace `YOUR_VIDEO_ID` with your actual YouTube video ID after uploading.
 
-[![Watch the full demo on YouTube](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+[![Watch the full demo on YouTube](https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg)](https://www.youtube.com/watch?v=3XslYjbphuc)
 
 <br>
 
