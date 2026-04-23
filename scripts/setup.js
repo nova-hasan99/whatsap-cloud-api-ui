@@ -13,7 +13,7 @@
  *   [5] Deploy all edge functions
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, copyFileSync } from 'fs';
 import { createClient } from '@supabase/supabase-js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -25,8 +25,14 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 function loadEnv() {
   const path = join(root, '.env.local');
   if (!existsSync(path)) {
-    console.error('\n  ✗  .env.local not found.');
-    console.error('  Copy .env.example → .env.local and fill in your credentials.\n');
+    const example = join(root, '.env.example');
+    if (existsSync(example)) {
+      copyFileSync(example, path);
+      console.error('\n  ✗  .env.local was missing — created it from .env.example.');
+    } else {
+      console.error('\n  ✗  .env.local not found.');
+    }
+    console.error('  Open .env.local and fill in all your credentials, then run npm run setup again.\n');
     process.exit(1);
   }
   for (const line of readFileSync(path, 'utf8').split('\n')) {
@@ -35,8 +41,8 @@ function loadEnv() {
     const idx = t.indexOf('=');
     if (idx < 0) continue;
     const k = t.slice(0, idx).trim();
-    const v = t.slice(idx + 1).trim();
-    if (v && !process.env[k]) process.env[k] = v;
+    const v = t.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+    if (v) process.env[k] = v;
   }
 }
 loadEnv();
@@ -46,9 +52,9 @@ const SUPABASE_URL  = process.env.VITE_SUPABASE_URL || '';
 const ANON_KEY      = process.env.VITE_SUPABASE_ANON_KEY || '';
 const SERVICE_KEY   = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const ACCESS_TOKEN  = process.env.SUPABASE_ACCESS_TOKEN || '';
-const ADMIN_EMAIL   = process.env.ADMIN_EMAIL || 'admin@example.com';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'changeme123';
-const ADMIN_NAME    = process.env.ADMIN_NAME || 'Admin';
+const ADMIN_EMAIL    = process.env.ADMIN_EMAIL    || process.env.VITE_ADMIN_EMAIL    || 'admin@example.com';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'changeme123';
+const ADMIN_NAME     = process.env.ADMIN_NAME     || 'Admin';
 
 // Extract project ref from URL  e.g. https://abcdef.supabase.co → abcdef
 const PROJECT_REF = SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] || '';
@@ -235,6 +241,7 @@ async function setupKeepalive() {
   // Enable pg_net, remove old job if exists, create fresh daily schedule.
   const sql = `
     CREATE EXTENSION IF NOT EXISTS pg_net;
+    CREATE EXTENSION IF NOT EXISTS pg_cron;
 
     DO $do$
     BEGIN
@@ -255,9 +262,17 @@ async function setupKeepalive() {
     log('Keepalive ping scheduled — runs daily at 08:00 UTC');
   } catch (e) {
     fail(`Keepalive setup failed: ${e.message}`);
-    warn('You can set this up manually in Supabase → SQL Editor:');
-    warn(`  SELECT cron.schedule('keepalive-ping', '0 8 * * *',`);
-    warn(`    'SELECT net.http_post(url := ''${pingUrl}'', ...)'`);
+    warn('pg_cron may need to be enabled manually first:');
+    warn('  Supabase Dashboard → Database → Extensions → search "pg_cron" → Enable');
+    warn('Then run this SQL in Supabase → SQL Editor:');
+    warn('');
+    warn(`  SELECT cron.schedule(`);
+    warn(`    'keepalive-ping', '0 8 * * *',`);
+    warn(`    'SELECT net.http_post(`);
+    warn(`      url := ''${pingUrl}'',`);
+    warn(`      headers := ''{"Authorization": "Bearer ${ANON_KEY}"}''::jsonb,`);
+    warn(`      body := ''{}''::jsonb`);
+    warn(`    )'`);
     warn(`  );`);
   }
 }

@@ -134,15 +134,27 @@ cd whatsap-cloud-api-ui
 npm install
 ```
 
+> Requires **Node.js 18+**. Works on Windows, macOS, and Linux.
+
 <br>
 
 ### Step 4 - Configure Environment Variables
 
 Copy the example file and fill in your values.
 
+**macOS / Linux**
 ```bash
 cp .env.example .env.local
 ```
+
+**Windows**
+```cmd
+copy .env.example .env.local
+```
+
+> Or just duplicate the file manually in your file explorer and rename it to `.env.local`.
+>
+> Note: if you forget this step, `npm run setup` will create `.env.local` automatically — just fill in the values and run it again.
 
 Open `.env.local` and fill in every field:
 
@@ -151,32 +163,27 @@ Open `.env.local` and fill in every field:
 # Found at: Project Settings → API → Project URL
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 
-# Supabase anonymous (public) key
-# Found at: Project Settings → API → anon public
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI...
-
 # Webhook URL (replace your-project-ref with your actual ref)
 VITE_WEBHOOK_URL=https://your-project-ref.supabase.co/functions/v1/whatsapp-webhook
 
-# Supabase service role key (secret, never expose to browser)
-# Found at: Project Settings → API → service_role
+# Supabase anonymous (public) key
+# Found at: Project Settings → API → anon_key + service_role_key (secret, never expose to browser)
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI...
 
 # Supabase personal access token for CLI deployment
 # Found at: Account → Access Tokens → Generate new token
 SUPABASE_ACCESS_TOKEN=sbp_your_token_here
 
-# Admin account credentials (created automatically by npm run setup)
-ADMIN_EMAIL=admin@yourdomain.com
-ADMIN_PASSWORD=your_secure_password
-ADMIN_NAME=Your Name
+# ── Admin login (created by npm run setup) ──────────────────────
+ADMIN_NAME=Admin
+VITE_ADMIN_EMAIL=admin@example.com
+VITE_ADMIN_PASSWORD=changeme123
 
-# Optional: auto-fill the login form when developing locally
-# Set to true to pre-fill email and password on the login page
-# Never set to true in production — these values are visible in the browser bundle
+# ── Dev autofill (optional) ──────────────────────────────────────
+# Set VITE_DEV_AUTOFILL=true to pre-fill the login form automatically.
+# Only use this locally - these values are visible in the browser bundle.
 VITE_DEV_AUTOFILL=false
-VITE_ADMIN_EMAIL=admin@yourdomain.com
-VITE_ADMIN_PASSWORD=your_secure_password
 ```
 
 <br>

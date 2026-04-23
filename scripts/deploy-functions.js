@@ -3,13 +3,20 @@
 // Usage: npm run deploy
 
 import { execSync } from 'child_process';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, copyFileSync } from 'fs';
 import { resolve } from 'path';
 
 // Parse .env.local
 const envPath = resolve(process.cwd(), '.env.local');
 if (!existsSync(envPath)) {
-  console.error('❌  .env.local not found');
+  const examplePath = resolve(process.cwd(), '.env.example');
+  if (existsSync(examplePath)) {
+    copyFileSync(examplePath, envPath);
+    console.error('❌  .env.local was missing — created it from .env.example.');
+  } else {
+    console.error('❌  .env.local not found.');
+  }
+  console.error('   Open .env.local and fill in your credentials, then run npm run deploy again.');
   process.exit(1);
 }
 
