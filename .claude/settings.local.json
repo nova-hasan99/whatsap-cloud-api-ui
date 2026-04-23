@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_4a5686fa1bec6b16e9c314789becd71d28b5119f npx supabase functions deploy upload-media --project-ref mrsbiuasehptijcypbam --no-verify-jwt)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_4a5686fa1bec6b16e9c314789becd71d28b5119f npx supabase functions deploy send-message --project-ref mrsbiuasehptijcypbam --no-verify-jwt)",
+      "WebFetch(domain:developers.facebook.com)",
+      "WebSearch",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_4a5686fa1bec6b16e9c314789becd71d28b5119f npx supabase functions logs send-template --project-ref mrsbiuasehptijcypbam)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_4a5686fa1bec6b16e9c314789becd71d28b5119f npx supabase functions logs --help)"
+    ]
+  }
+}

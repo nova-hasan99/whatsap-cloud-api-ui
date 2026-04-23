@@ -112,15 +112,21 @@ Deno.serve(async (req) => {
 
         // ---------- Status updates ----------
         for (const st of change.value.statuses ?? []) {
-          await sb
+          const failedPatch = st.status === 'failed' && st.errors
+            ? { content: { error: st.errors[0] } }
+            : {};
+          const { data: updated } = await sb
             .from('messages')
-            .update({
-              status: st.status,
-              ...(st.status === 'failed' && st.errors
-                ? { content: { error: st.errors[0] } }
-                : {}),
-            })
-            .eq('wamid', st.id);
+            .update({ status: st.status, ...failedPatch })
+            .eq('wamid', st.id)
+            .select('id');
+
+          // No matching message = sent from an external tool (n8n, automation, etc.)
+          // Create the conversation + placeholder for ANY status (sent/delivered/read/failed)
+          // so the contact always appears in the dashboard regardless of which event arrives first.
+          if (!updated || updated.length === 0) {
+            await captureExternalOutbound(sb, numberRow.id, st);
+          }
         }
       }
     }
@@ -192,12 +198,13 @@ async function handleIncomingMessage(
       return;
     }
     conversationId = created.id;
-  } else if (customerName) {
-    // refresh name if we learned it
-    await sb
-      .from('conversations')
-      .update({ customer_name: customerName })
-      .eq('id', conversationId);
+  } else {
+    // Every inbound message resets the 24-hour messaging window.
+    const patch: Record<string, unknown> = {
+      window_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    };
+    if (customerName) patch.customer_name = customerName;
+    await sb.from('conversations').update(patch).eq('id', conversationId);
   }
 
   // Build message content based on type.
@@ -266,6 +273,55 @@ async function handleIncomingMessage(
       type,
       content,
       status: 'delivered',
+      timestamp: ts,
+    },
+    { onConflict: 'wamid' },
+  );
+}
+
+// Capture outbound messages sent from external tools (n8n, automations, etc.)
+// Called when a status webhook arrives for a wamid we have no record of.
+async function captureExternalOutbound(
+  sb: ReturnType<typeof adminClient>,
+  whatsappNumberId: string,
+  st: MetaStatus,
+) {
+  const recipientPhone = st.recipient_id;
+  const ts = new Date(Number(st.timestamp) * 1000).toISOString();
+
+  // Find or create conversation for this recipient
+  const { data: existingConv } = await sb
+    .from('conversations')
+    .select('id')
+    .eq('whatsapp_number_id', whatsappNumberId)
+    .eq('customer_phone', recipientPhone)
+    .maybeSingle();
+
+  let conversationId = existingConv?.id;
+  if (!conversationId) {
+    const { data: created, error } = await sb
+      .from('conversations')
+      .insert({
+        whatsapp_number_id: whatsappNumberId,
+        customer_phone: recipientPhone,
+        last_message_at: ts,
+      })
+      .select('id')
+      .single();
+    if (error || !created) return;
+    conversationId = created.id;
+  }
+
+  // Log placeholder outbound message — content unknown (sent externally)
+  await sb.from('messages').upsert(
+    {
+      conversation_id: conversationId,
+      whatsapp_number_id: whatsappNumberId,
+      wamid: st.id,
+      direction: 'outbound',
+      type: 'text',
+      content: { body: '', external: true },
+      status: st.status,
       timestamp: ts,
     },
     { onConflict: 'wamid' },

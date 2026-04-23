@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Home,
@@ -8,6 +9,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { cx } from '@/lib/utils';
 
 const items = [
@@ -20,6 +22,7 @@ const items = [
 export function Sidebar() {
   const { signOut, session } = useAuth();
   const navigate = useNavigate();
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   return (
     <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-gray-200 bg-white md:flex">
@@ -69,13 +72,23 @@ export function Sidebar() {
           </div>
         </div>
         <button
-          onClick={signOut}
+          onClick={() => setConfirmLogout(true)}
           className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
         >
           <LogOut size={18} />
           Logout
         </button>
       </div>
+
+      <ConfirmDialog
+        open={confirmLogout}
+        title="Sign out?"
+        message="You'll be signed out of the dashboard. Any unsaved work will be lost."
+        confirmLabel="Yes, sign out"
+        destructive
+        onConfirm={() => { signOut(); setConfirmLogout(false); }}
+        onCancel={() => setConfirmLogout(false)}
+      />
     </aside>
   );
 }

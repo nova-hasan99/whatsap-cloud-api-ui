@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { LoginPage } from '@/pages/LoginPage';
@@ -11,6 +12,7 @@ import { InboxPage } from '@/pages/InboxPage';
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <ToastProvider>
       <AuthProvider>
         <Routes>
@@ -58,5 +60,6 @@ export default function App() {
         </Routes>
       </AuthProvider>
     </ToastProvider>
+    </ErrorBoundary>
   );
 }

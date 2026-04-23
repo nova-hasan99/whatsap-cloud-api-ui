@@ -10,9 +10,10 @@ interface Props {
   conv: Conversation;
   onBack: () => void;
   onArchived: () => void;
+  onContactClick: () => void;
 }
 
-export function ChatHeader({ conv, onBack, onArchived }: Props) {
+export function ChatHeader({ conv, onBack, onArchived, onContactClick }: Props) {
   const toast = useToast();
   const display = conv.customer_name || formatPhone(conv.customer_phone);
 
@@ -38,13 +39,24 @@ export function ChatHeader({ conv, onBack, onArchived }: Props) {
         >
           <ArrowLeft size={18} />
         </button>
-        <Avatar name={display} size={40} />
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-gray-900">{display}</div>
-          <div className="truncate text-[11px] text-gray-500">
-            {formatPhone(conv.customer_phone)}
+        <button
+          type="button"
+          onClick={onContactClick}
+          className="flex items-center gap-3 min-w-0 rounded-lg hover:bg-black/5 -ml-1 pl-1 pr-2 py-1 transition-colors"
+        >
+          <Avatar
+            name={display}
+            src={conv.customer_profile_pic_url}
+            size={40}
+            className="ring-2 ring-white"
+          />
+          <div className="min-w-0 text-left">
+            <div className="truncate text-sm font-semibold text-gray-900">{display}</div>
+            <div className="truncate text-[11px] text-gray-500">
+              {formatPhone(conv.customer_phone)}
+            </div>
           </div>
-        </div>
+        </button>
       </div>
       <div className="flex items-center gap-2">
         <WindowStatusPill expiresAt={conv.window_expires_at} />

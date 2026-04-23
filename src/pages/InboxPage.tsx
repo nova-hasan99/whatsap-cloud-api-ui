@@ -5,9 +5,11 @@ import { ConversationsList } from '@/components/inbox/ConversationsList';
 import { ChatArea } from '@/components/inbox/ChatArea';
 import { ChatHeader } from '@/components/inbox/ChatHeader';
 import { ChatFooter } from '@/components/inbox/ChatFooter';
+import { ContactPanel } from '@/components/inbox/ContactPanel';
 import { EmptyChatState } from '@/components/inbox/EmptyChatState';
 import { WindowBanner } from '@/components/inbox/WindowBanner';
 import { TemplateSelector } from '@/components/inbox/TemplateSelector';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useNumbers } from '@/hooks/useNumbers';
 import { useInboundNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,6 +26,8 @@ export function InboxPage() {
   const [selected, setSelected] = useState<Conversation | null>(null);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [contactPanelOpen, setContactPanelOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   useInboundNotifications(notifEnabled);
 
   // Default to first number if none selected
@@ -65,6 +69,7 @@ export function InboxPage() {
     navigate(`/inbox/${c.whatsapp_number_id}/${c.id}`);
     setSelected(c);
     setReplyTo(null);
+    setContactPanelOpen(false);
   }
 
   const showLeftOnMobile = !selected;
@@ -89,7 +94,7 @@ export function InboxPage() {
         </button>
         <div className="flex-1" />
         <button
-          onClick={signOut}
+          onClick={() => setConfirmLogout(true)}
           title="Logout"
           className="rounded p-2 text-red-600 hover:bg-red-50"
         >
@@ -119,11 +124,12 @@ export function InboxPage() {
         )}
       >
         {selected ? (
-          <>
+          <div className="relative flex flex-1 flex-col overflow-hidden">
             <ChatHeader
               conv={selected}
               onBack={() => navigate(`/inbox/${selected.whatsapp_number_id}`)}
               onArchived={() => navigate(`/inbox/${selected.whatsapp_number_id}`)}
+              onContactClick={() => setContactPanelOpen((o) => !o)}
             />
             <WindowBanner expiresAt={selected.window_expires_at} />
             <ChatArea conversationId={selected.id} onReply={setReplyTo} />
@@ -141,11 +147,27 @@ export function InboxPage() {
               conversationId={selected.id}
               whatsappNumberId={selected.whatsapp_number_id}
             />
-          </>
+            <ContactPanel
+              conv={selected}
+              open={contactPanelOpen}
+              onClose={() => setContactPanelOpen(false)}
+              onArchived={() => navigate(`/inbox/${selected.whatsapp_number_id}`)}
+            />
+          </div>
         ) : (
           <EmptyChatState />
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmLogout}
+        title="Sign out?"
+        message="You'll be signed out of the dashboard. Any unsaved work will be lost."
+        confirmLabel="Yes, sign out"
+        destructive
+        onConfirm={() => { signOut(); setConfirmLogout(false); }}
+        onCancel={() => setConfirmLogout(false)}
+      />
     </div>
   );
 }

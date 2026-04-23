@@ -8,6 +8,7 @@ import {
   Activity,
   RefreshCcw,
   Phone,
+  UserCircle,
 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/Button';
@@ -16,6 +17,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SpinnerCenter } from '@/components/ui/Spinner';
 import { NumberFormModal } from '@/components/admin/NumberFormModal';
+import { NumberProfileModal } from '@/components/admin/NumberProfileModal';
 import { useNumbers } from '@/hooks/useNumbers';
 import { supabase, callFunction } from '@/lib/supabase';
 import { useToast } from '@/contexts/ToastContext';
@@ -30,6 +32,7 @@ export function NumbersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<WhatsAppNumber | null>(null);
   const [deleting, setDeleting] = useState<WhatsAppNumber | null>(null);
+  const [profileNumber, setProfileNumber] = useState<WhatsAppNumber | null>(null);
   const [busy, setBusy] = useState(false);
   const [testingId, setTestingId] = useState<string | null>(null);
 
@@ -144,6 +147,14 @@ export function NumbersPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          icon={<UserCircle size={14} />}
+                          onClick={() => setProfileNumber(n)}
+                        >
+                          Profile
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           icon={<Pencil size={14} />}
                           onClick={() => {
                             setEditing(n);
@@ -169,6 +180,11 @@ export function NumbersPage() {
           )}
         </div>
       </div>
+
+      <NumberProfileModal
+        number={profileNumber}
+        onClose={() => setProfileNumber(null)}
+      />
 
       <NumberFormModal
         open={modalOpen}

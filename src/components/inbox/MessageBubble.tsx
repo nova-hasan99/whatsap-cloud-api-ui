@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { CornerUpLeft } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { CornerUpLeft, AlertTriangle, ChevronDown, Trash2, Ban } from 'lucide-react';
 import { cx, chatTime } from '@/lib/utils';
 import type { Message } from '@/lib/database.types';
 import { MessageStatusIcon } from './MessageStatus';
@@ -17,20 +17,38 @@ interface Props {
   prevSameSender: boolean;
   allMessages: Message[];
   onReply?: (msg: Message) => void;
+  onDelete?: (msg: Message) => void;
 }
 
 const SWIPE_THRESHOLD = 60;
 
-export function MessageBubble({ message, prevSameSender, allMessages, onReply }: Props) {
+export function MessageBubble({ message, prevSameSender, allMessages, onReply, onDelete }: Props) {
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [translateX, setTranslateX] = useState(0);
   const [showReplyHint, setShowReplyHint] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+  const chevronRef = useRef<HTMLButtonElement>(null);
   const startXRef = useRef<number | null>(null);
   const triggeredRef = useRef(false);
+
+  // Close menu on scroll or resize
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = () => setMenuOpen(false);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [menuOpen]);
 
   const outbound = message.direction === 'outbound';
   const content = (message.content || {}) as Record<string, any>;
   const showTail = !prevSameSender;
+  const isDeleted = !!content.deleted;
+  const canDelete = outbound && !!message.wamid && !isDeleted && message.status !== 'pending';
 
   // Look up the quoted message if this message is a reply
   const quotedMsg = content.context_wamid
@@ -71,6 +89,7 @@ export function MessageBubble({ message, prevSameSender, allMessages, onReply }:
           'group relative flex w-full items-center px-3',
           outbound ? 'justify-end' : 'justify-start',
           showTail ? 'mt-2' : 'mt-1',
+          menuOpen ? 'z-20' : 'z-0',
         )}
       >
         {/* Swipe reply icon — appears behind the bubble */}
@@ -86,26 +105,13 @@ export function MessageBubble({ message, prevSameSender, allMessages, onReply }:
           </div>
         </div>
 
-        {/* Hover reply button (desktop) */}
-        {onReply && (
-          <button
-            onClick={() => onReply(message)}
-            className={cx(
-              'absolute top-1/2 -translate-y-1/2 rounded-full bg-white p-1.5 shadow-sm opacity-0 transition-opacity group-hover:opacity-100',
-              outbound ? 'left-2' : 'right-2',
-            )}
-            title="Reply"
-          >
-            <CornerUpLeft size={14} className="text-gray-500" />
-          </button>
-        )}
 
         {/* Bubble */}
         <div
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
+          onPointerDown={isDeleted ? undefined : onPointerDown}
+          onPointerMove={isDeleted ? undefined : onPointerMove}
+          onPointerUp={isDeleted ? undefined : onPointerUp}
+          onPointerCancel={isDeleted ? undefined : onPointerUp}
           style={{
             transform: `translateX(${outbound ? -translateX : translateX}px)`,
             transition: translateX === 0 ? 'transform 0.2s ease' : 'none',
@@ -137,7 +143,99 @@ export function MessageBubble({ message, prevSameSender, allMessages, onReply }:
             </div>
           )}
 
+          {/* WhatsApp-style chevron — fades in on hover at top-right of bubble */}
+          {!isDeleted && (onReply || (canDelete && onDelete)) && (
+            <div
+              className={cx(
+                'absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity z-10',
+              )}
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerUp={(e) => e.stopPropagation()}
+            >
+              {/* Gradient fade matching bubble colour */}
+              <div className={cx(
+                'flex h-8 w-8 items-end justify-center pb-0.5 rounded-tr-[7px]',
+                outbound
+                  ? 'bg-gradient-to-bl from-wa-outbound via-wa-outbound/80 to-transparent'
+                  : 'bg-gradient-to-bl from-white via-white/80 to-transparent',
+              )}>
+                <button
+                  ref={chevronRef}
+                  onClick={() => {
+                    const rect = chevronRef.current?.getBoundingClientRect();
+                    if (rect) {
+                      setMenuPos({
+                        top: rect.bottom + 4,
+                        right: window.innerWidth - rect.right,
+                      });
+                    }
+                    setMenuOpen((o) => !o);
+                  }}
+                  className="leading-none"
+                  title="Message options"
+                >
+                  <ChevronDown size={15} className="text-gray-500" />
+                </button>
+              </div>
+
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-[900]" onClick={() => setMenuOpen(false)} />
+                  <div
+                    className="fixed z-[901] min-w-[180px] overflow-hidden rounded-lg border border-gray-100 bg-white py-1 shadow-panel"
+                    style={{ top: menuPos.top, right: menuPos.right }}
+                  >
+                    {onReply && (
+                      <button
+                        onClick={() => { setMenuOpen(false); onReply(message); }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <CornerUpLeft size={14} className="text-gray-500" />
+                        Reply
+                      </button>
+                    )}
+                    {canDelete && onDelete && (
+                      <button
+                        onClick={() => { setMenuOpen(false); onDelete(message); }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                        Delete for everyone
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
           {renderContent(message, content, (u) => setLightbox(u))}
+
+          {/* Failed message error banner */}
+          {!isDeleted && message.status === 'failed' && content.error && (() => {
+            const err = parseMessageError(content.error);
+            if (!err) return null;
+            return (
+              <div className="mt-1.5 overflow-hidden rounded-md border border-red-200 bg-white text-xs shadow-sm">
+                {/* Header row — raw error title + code */}
+                <div className="flex items-center gap-1.5 border-b border-red-100 bg-red-50 px-2 py-1">
+                  <AlertTriangle size={11} className="shrink-0 text-red-500" />
+                  <span className="truncate font-medium text-red-700">
+                    {err.rawTitle || 'Message not delivered'}
+                  </span>
+                  {err.code && (
+                    <span className="ml-auto shrink-0 font-mono text-[10px] text-red-400">
+                      #{err.code}
+                    </span>
+                  )}
+                </div>
+                {/* Raw error detail from Meta */}
+                <div className="px-2 py-1.5">
+                  <p className="leading-snug text-gray-600">{err.rawDetail || err.friendly}</p>
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="mt-1 flex items-center justify-end gap-1">
             <span className="text-[11px] text-gray-500">{chatTime(message.timestamp)}</span>
@@ -156,8 +254,24 @@ function renderContent(
   content: Record<string, any>,
   onOpenLightbox: (url: string) => void,
 ) {
+  if (content.deleted) {
+    return (
+      <p className="flex items-center gap-1.5 text-[13px] italic text-gray-400">
+        <Ban size={13} className="shrink-0" />
+        This message was deleted
+      </p>
+    );
+  }
+
   switch (message.type) {
     case 'text':
+      if (content.external && !content.body) {
+        return (
+          <p className="text-[13px] italic text-gray-400">
+            📤 Sent via external tool
+          </p>
+        );
+      }
       return <TextMessage body={content.body || ''} />;
     case 'image':
       return (
@@ -195,12 +309,57 @@ function renderContent(
           <span className="text-sm font-medium text-gray-900">
             {content.template_name}
           </span>
-          {content.error && (
-            <span className="text-xs text-red-600">{content.error}</span>
-          )}
         </div>
       );
     default:
       return <p className="text-xs text-gray-500">Unsupported message type</p>;
   }
+}
+
+// ── Error helpers ──────────────────────────────────────────────
+
+const META_ERROR_FRIENDLY: Record<number, string> = {
+  131042: 'Payment method issue — visit Meta Business Manager to fix your billing.',
+  131049: "Not delivered — the recipient hasn't engaged with your business. Ask them to message you first.",
+  131047: '24-hour messaging window expired. Send a template message instead.',
+  131026: "Undeliverable — the recipient's number may be invalid or unreachable.",
+  131000: "Something went wrong on WhatsApp's servers. Please try again.",
+  131008: 'Missing required message parameters.',
+  131021: "This number isn't in your approved test recipients list.",
+  131051: 'Unsupported message type for this recipient.',
+  130472: 'WhatsApp is running an A/B test on this message — delivery not guaranteed.',
+  368:    'Account temporarily blocked for policy violations.',
+  100:    'Invalid message content or parameter.',
+};
+
+function parseMessageError(
+  err: unknown,
+): { friendly: string; code?: number; rawTitle?: string; rawDetail?: string } | null {
+  if (!err) return null;
+
+  if (typeof err === 'object' && err !== null) {
+    const e = err as any;
+    const code = Number(e.code) || undefined;
+    const rawTitle: string = e.title || e.message || '';
+    const rawDetail: string = e.error_data?.details || e.message || '';
+    const friendly = (code && META_ERROR_FRIENDLY[code]) || rawDetail || 'Message failed to send.';
+    return { friendly, code, rawTitle, rawDetail };
+  }
+
+  if (typeof err === 'string') {
+    try {
+      return parseMessageError(JSON.parse(err));
+    } catch {}
+
+    if (err.includes('131049') || /healthy ecosystem/i.test(err))
+      return { friendly: META_ERROR_FRIENDLY[131049], code: 131049, rawTitle: 'Ecosystem engagement block', rawDetail: err };
+    if (err.includes('131042') || /payment/i.test(err))
+      return { friendly: META_ERROR_FRIENDLY[131042], code: 131042, rawTitle: 'Business eligibility payment issue', rawDetail: err };
+    if (err.includes('131047') || /window/i.test(err))
+      return { friendly: META_ERROR_FRIENDLY[131047], code: 131047, rawTitle: 'Outside messaging window', rawDetail: err };
+
+    return { friendly: err, rawDetail: err };
+  }
+
+  return null;
 }

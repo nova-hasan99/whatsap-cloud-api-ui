@@ -27,15 +27,36 @@ Deno.serve(async (req) => {
     .single();
   if (error || !number) return errorResponse('Number not found', 404);
 
+  // Normalise audio MIME type — Chrome records webm but WhatsApp needs ogg/mp4.
+  const isAudio = file.type.startsWith('audio/');
+  const storageMime = isAudio
+    ? (file.type.includes('mp4') ? 'audio/mp4' : 'audio/ogg')
+    : file.type;
+
   // Mirror to storage so we have a stable URL.
   const path = `${number.id}/${crypto.randomUUID()}-${file.name}`;
   const { error: storageErr } = await sb.storage
     .from('media')
-    .upload(path, file, { contentType: file.type, upsert: false });
+    .upload(path, file, { contentType: storageMime, upsert: false });
   if (storageErr) return errorResponse(storageErr.message, 500);
   const { data: pub } = sb.storage.from('media').getPublicUrl(path);
 
-  // Push to Meta.
+  // For audio: skip Meta's pre-upload and use the Supabase Storage URL as a
+  // `link` when sending. Meta validates actual bytes at pre-upload time for
+  // audio (causing errors with webm-labeled-as-ogg), but is more permissive
+  // when fetching from a URL where it trusts the Content-Type header.
+  if (isAudio) {
+    return jsonResponse({
+      success: true,
+      media_id: null,
+      public_url: pub.publicUrl,
+      filename: file.name,
+      mime_type: storageMime,
+      size: file.size,
+    });
+  }
+
+  // Push to Meta (images, videos, documents).
   try {
     const result = await uploadMedia({
       phoneNumberId: number.phone_number_id,

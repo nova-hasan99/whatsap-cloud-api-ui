@@ -7,7 +7,7 @@ export interface MetaCreds {
   accessToken: string;
 }
 
-async function metaFetch<T = unknown>(
+export async function metaFetch<T = unknown>(
   path: string,
   init: RequestInit & { token: string },
 ): Promise<T> {
@@ -179,6 +179,71 @@ export async function uploadMedia(a: UploadMediaArgs): Promise<{ id: string }> {
 export interface FetchTemplatesArgs {
   wabaId: string;
   accessToken: string;
+}
+
+export interface WhatsAppProfile {
+  about?: string;
+  address?: string;
+  description?: string;
+  email?: string;
+  profile_picture_url?: string;
+  websites?: string[];
+  vertical?: string;
+}
+
+export async function getWhatsAppProfile(a: MetaCreds): Promise<WhatsAppProfile> {
+  const data = await metaFetch<{ data: WhatsAppProfile[] }>(
+    `/${a.phoneNumberId}/whatsapp_business_profile?fields=about,address,description,email,profile_picture_url,websites,vertical`,
+    { method: 'GET', token: a.accessToken },
+  );
+  return data.data?.[0] ?? {};
+}
+
+export async function updateWhatsAppProfile(
+  a: MetaCreds,
+  fields: Partial<WhatsAppProfile & { profile_picture_handle: string }>,
+): Promise<void> {
+  await metaFetch(`/${a.phoneNumberId}/whatsapp_business_profile`, {
+    method: 'POST',
+    token: a.accessToken,
+    body: JSON.stringify({ messaging_product: 'whatsapp', ...fields }),
+  });
+}
+
+export async function uploadProfilePicture(
+  a: MetaCreds,
+  file: Blob,
+  filename: string,
+  mimeType: string,
+): Promise<string> {
+  const base = `https://graph.facebook.com/${META_GRAPH_VERSION}`;
+
+  // Step 1 — start resumable upload session
+  const sessionRes = await fetch(
+    `${base}/app/uploads?file_length=${file.size}&file_type=${encodeURIComponent(mimeType)}&file_name=${encodeURIComponent(filename)}`,
+    { method: 'POST', headers: { Authorization: `Bearer ${a.accessToken}` } },
+  );
+  const sessionData = await sessionRes.json();
+  if (!sessionRes.ok) {
+    throw new Error(sessionData?.error?.message || 'Failed to start upload session');
+  }
+  const sessionId: string = sessionData.id; // "upload:..."
+
+  // Step 2 — upload file bytes
+  const uploadRes = await fetch(`${base}/${sessionId}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `OAuth ${a.accessToken}`,
+      file_offset: '0',
+      'Content-Type': mimeType,
+    },
+    body: file,
+  });
+  const uploadData = await uploadRes.json();
+  if (!uploadRes.ok) {
+    throw new Error(uploadData?.error?.message || 'Failed to upload profile picture');
+  }
+  return uploadData.h as string; // the handle to use as profile_picture_handle
 }
 
 export async function fetchTemplates(a: FetchTemplatesArgs) {

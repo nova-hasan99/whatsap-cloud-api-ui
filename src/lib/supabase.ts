@@ -54,7 +54,11 @@ export async function callFunction<T = any>(
     parsed = { raw: text };
   }
   if (!res.ok) {
-    throw new Error(parsed?.error || parsed?.message || `Request failed (${res.status})`);
+    const raw = parsed?.error ?? parsed?.message;
+    const msg = typeof raw === 'string' ? raw
+      : raw != null ? JSON.stringify(raw)
+      : `Request failed (${res.status})`;
+    throw new Error(msg);
   }
   return parsed as T;
 }

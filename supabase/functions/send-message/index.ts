@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
     body.type === 'text'
       ? { body: body.text ?? '' }
       : {
+          public_url: body.media_url,   // used by UI to render media immediately
           link: body.media_url,
           media_id: body.media_id,
           caption: body.caption ?? '',

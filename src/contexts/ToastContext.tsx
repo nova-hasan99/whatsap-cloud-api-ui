@@ -37,7 +37,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const show = useCallback(
     (message: string, kind: ToastKind = 'info') => {
       const id = ++idRef.current;
-      setToasts((t) => [...t, { id, kind, message }]);
+      const safeMsg = typeof message === 'string' ? message : JSON.stringify(message);
+      setToasts((t) => [...t, { id, kind, message: safeMsg }]);
       window.setTimeout(() => dismiss(id), 3000);
     },
     [dismiss],

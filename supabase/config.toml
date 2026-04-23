@@ -28,19 +28,28 @@ file_size_limit = "50MiB"
 verify_jwt = false
 
 [functions.send-message]
-verify_jwt = true
+verify_jwt = false
 
 [functions.send-template]
-verify_jwt = true
+verify_jwt = false
 
 [functions.mark-read]
-verify_jwt = true
+verify_jwt = false
 
 [functions.fetch-templates]
-verify_jwt = true
+verify_jwt = false
 
 [functions.test-connection]
-verify_jwt = true
+verify_jwt = false
 
 [functions.upload-media]
-verify_jwt = true
+verify_jwt = false
+
+[functions.log-message]
+verify_jwt = false
+
+[functions.update-profile]
+verify_jwt = false
+
+[functions.delete-message]
+verify_jwt = false
