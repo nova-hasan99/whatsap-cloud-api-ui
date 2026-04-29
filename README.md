@@ -20,7 +20,7 @@ A production-ready admin dashboard for managing WhatsApp Business conversations.
 
 ## 🎬 Video Demo
 
-[![Watch the full demo on YouTube](https://img.youtube.com/vi/3XslYjbphuc/maxresdefault.jpg)](https://www.youtube.com/watch?v=3XslYjbphuc)
+[![Watch the full demo on YouTube](https://img.youtube.com/vi/EYhJ5NuvMCNOU9Dz/maxresdefault.jpg)](https://youtu.be/yWHqjLEF7HI?si=EYhJ5NuvMCNOU9Dz)
 
 <br>
 

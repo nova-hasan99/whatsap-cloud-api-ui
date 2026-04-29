@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
-const autofill = import.meta.env.VITE_DEV_AUTOFILL === 'true';
+const autofill = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTOFILL === 'true';
 const defaultEmail = autofill ? (import.meta.env.VITE_ADMIN_EMAIL ?? '') : '';
 const defaultPassword = autofill ? (import.meta.env.VITE_ADMIN_PASSWORD ?? '') : '';
 

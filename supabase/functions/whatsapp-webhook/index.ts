@@ -168,7 +168,7 @@ async function handleIncomingMessage(
   msg: MetaIncomingMessage,
 ) {
   const customerPhone = msg.from.startsWith('+') ? msg.from : '+' + msg.from;
-  const contact = value.contacts?.find((c) => c.wa_id === customerPhone);
+  const contact = value.contacts?.find((c) => c.wa_id === msg.from || c.wa_id === customerPhone);
   const customerName = contact?.profile?.name ?? null;
   const ts = new Date(Number(msg.timestamp) * 1000).toISOString();
 
